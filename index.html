@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>代購與收件管理系統 - 編輯與檢視介面</title>
     <style>
-        /* 保留原本漂亮的 CSS 視覺外觀樣式 */
-        *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after { box-spacing: border-box; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f4f6f8; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         header { border-bottom: 2px solid #3f51b5; padding-bottom: 15px; margin-bottom: 25px; }
@@ -16,9 +15,14 @@
         .filter-cell { padding: 8px; vertical-align: middle; }
         .search-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         .dropdown-select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #fff; font-size: 14px; cursor: pointer; }
-        .layout-table { width: 100%; border-collapse: collapse; border-spacing: 0; }
-        .left-column { width: 55%; padding-right: 20px; vertical-align: top; }
-        .right-column { width: 45%; padding-left: 20px; border-left: 2px dashed #e0e0e0; vertical-align: top; }
+        
+        /* 靈活的左右排版 */
+        .layout-container { display: flex; gap: 20px; }
+        .left-column { flex: 1; min-width: 300px; }
+        
+        /* 💡 關鍵更改：右側欄位預設隱藏 (display: none) */
+        .right-column { flex: 1; min-width: 300px; border-left: 2px dashed #e0e0e0; padding-left: 20px; display: none; }
+        
         .view-mode-badge { background-color: #e8eaf6; color: #3f51b5; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; float: right; }
         .section-title { font-size: 16px; color: #2c3e50; margin-top: 0; margin-bottom: 15px; padding-left: 8px; border-left: 4px solid #3f51b5; }
         .data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
@@ -32,7 +36,6 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: bold; color: #555; }
         .form-control { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; background-color: #fff; }
-        .form-control:focus { border-color: #3f51b5; outline: none; box-shadow: 0 0 4px rgba(63, 81, 181, 0.3); }
         textarea.form-control { resize: vertical; height: 80px; }
         .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; }
         .status-pending { background-color: #ff9800; }
@@ -42,13 +45,19 @@
         .status-returning { background-color: #f44336; }
         .status-done { background-color: #9e9e9e; }
         .footer-note { margin-top: 25px; padding: 12px; background-color: #fffde7; border: 1px solid #fff59d; border-radius: 4px; font-size: 13px; color: #5d4037; text-align: center; }
+
+        /* 手機版響應式微調 */
+        @media (max-width: 768px) {
+            .layout-container { flex-direction: column; }
+            .right-column { border-left: none; padding-left: 0; border-top: 2px dashed #e0e0e0; padding-top: 20px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <span class="view-mode-badge">狀態：一個頁面可編輯 / 一個畫面只能看</span>
+        <span class="view-mode-badge">狀態：互動式切換介面</span>
         <h1>代購收件管理系統 (Hazig_5)</h1>
         <p class="subtitle">整合 Firebase 資料庫之商品、人物與物流狀態追蹤看板</p>
     </header>
@@ -58,70 +67,68 @@
             <td class="filter-cell" style="width: 40%;"><input type="text" class="search-box" id="searchKey" placeholder="🔍 搜尋商品 / 收件人關鍵字..."></td>
             <td class="filter-cell" style="width: 20%;">
                 <select class="dropdown-select" id="filterUser">
-                    <option value="">▼ 下拉式選單: 人名 (全部)</option>
+                    <option value="">▼ 人名 (全部)</option>
                     <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option><option value="左奇函">左奇函</option>
                     <option value="王櫓杰">王櫓杰</option><option value="陳奕恆">陳奕恆</option><option value="楊博文">楊博文</option><option value="魏子宸">魏子宸</option>
                 </select>
             </td>
-            <td class="filter-cell" style="width: 20%;"><select class="dropdown-select" id="filterProduct"><option value="">▼ 下拉式選單: 商品 (全部)</option></select></td>
-            <td class="filter-cell" style="width: 20%;"><select class="dropdown-select" id="filterReceiver"><option value="">▼ 下拉式選單: 收件人 (全部)</option></select></td>
+            <td class="filter-cell" style="width: 20%;"><select class="dropdown-select" id="filterProduct"><option value="">▼ 商品 (全部)</option></select></td>
+            <td class="filter-cell" style="width: 20%;"><select class="dropdown-select" id="filterReceiver"><option value="">▼ 收件人 (全部)</option></select></td>
         </tr>
     </table>
 
-    <table class="layout-table">
-        <tr>
-            <td class="left-column">
-                <h2 class="section-title">物流與訂單總覽表</h2>
-                <table class="data-table" id="orderTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 25%;">物流狀態</th>
-                            <th style="width: 30%;">品名</th>
-                            <th style="width: 25%;">收件人</th>
-                            <th style="width: 20%;">價錢 (¥)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
+    <div class="layout-container">
+        <div class="left-column">
+            <h2 class="section-title">物流與訂單總覽表</h2>
+            <table class="data-table" id="orderTable">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">物流</th>
+                        <th style="width: 35%;">品名</th>
+                        <th style="width: 20%;">收件人</th>
+                        <th style="width: 20%;">價錢</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+            <button class="btn btn-add" id="btnNewProduct">➕ 點選新增商品</button>
+        </div>
+
+        <div class="right-column" id="rightFormColumn">
+            <h2 class="section-title" id="formTitle">商品詳細資訊 (編輯/新增)</h2>
+            <form id="orderForm">
+                <div class="form-group"><label for="productName">商品名稱</label><input type="text" id="productName" class="form-control" placeholder="請輸入商品名稱" required></div>
+                <div class="form-group">
+                    <label for="characterSelect">人物 (下拉式選單)</label>
+                    <select id="characterSelect" class="form-control">
+                        <option value="">-- 請選擇人物 --</option>
+                        <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option>
+                        <option value="王櫓杰">王櫓杰</option><option value="左奇函">左奇函</option><option value="陳奕恆">陳奕恆</option>
+                        <option value="楊博文">楊博文</option><option value="魏子宸">魏子宸</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="receiverName">收件人</label><input type="text" id="receiverName" class="form-control" placeholder="請輸入收件人姓名"></div>
+                <div class="form-group"><label for="originalPrice">原價 (人民幣 ¥)</label><input type="number" id="originalPrice" class="form-control" placeholder="請輸入人民幣金額"></div>
+                <div class="form-group"><label for="purchasePrice">代購價 (台幣 NT$)</label><input type="number" id="purchasePrice" class="form-control" placeholder="請輸入台幣計算金額"></div>
+                <div class="form-group"><label for="paymentStatus">無卡 / 匯款狀態</label><input type="text" id="paymentStatus" class="form-control" placeholder="請註記價錢與付款狀態"></div>
+                <div class="form-group">
+                    <label for="logisticsStatus">物流狀態</label>
+                    <select id="logisticsStatus" class="form-control">
+                        <option value="待發貨">待發貨</option><option value="時代峰峻發貨">時代峰峻發貨</option><option value="數碼集運發貨">數碼集運發貨</option>
+                        <option value="到集運倉">到集運倉</option><option value="運回中">運回中</option><option value="已到貨">已到貨</option><option value="完成">完成</option>
+                    </select>
+                </div>
+                <div class="form-group"><label for="remarks">備註</label><textarea id="remarks" class="form-control" placeholder="請輸入備註資訊..."></textarea></div>
+                <table style="width:100%;">
+                    <tr>
+                        <td><button type="button" id="btnCancel" class="btn" style="background-color: #78909c; width:100%;">收起 / 取消</button></td>
+                        <td style="padding-left: 10px;"><button type="submit" class="btn" style="width:100%;">儲存至 Firebase</button></td>
+                    </tr>
                 </table>
-                <button class="btn btn-add" id="btnNewProduct">➕ 點選新增商品</button>
-            </td>
-
-            <td class="right-column">
-                <h2 class="section-title" id="formTitle">商品詳細資訊 (編輯/新增)</h2>
-                <form id="orderForm">
-                    <div class="form-group"><label for="productName">商品名稱</label><input type="text" id="productName" class="form-control" placeholder="請輸入商品名稱" required></div>
-                    <div class="form-group">
-                        <label for="characterSelect">人物 (下拉式選單)</label>
-                        <select id="characterSelect" class="form-control">
-                            <option value="">-- 請選擇人物 --</option>
-                            <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option>
-                            <option value="王櫓杰">王櫓杰</option><option value="左奇函">左奇函</option><option value="陳奕恆">陳奕恆</option>
-                            <option value="楊博文">楊博文</option><option value="魏子宸">魏子宸</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label for="receiverName">收件人</label><input type="text" id="receiverName" class="form-control" placeholder="請輸入收件人姓名"></div>
-                    <div class="form-group"><label for="originalPrice">原價 (人民幣 ¥)</label><input type="number" id="originalPrice" class="form-control" placeholder="請輸入人民幣金額"></div>
-                    <div class="form-group"><label for="purchasePrice">代購價 (台幣 NT$)</label><input type="number" id="purchasePrice" class="form-control" placeholder="請輸入台幣計算金額"></div>
-                    <div class="form-group"><label for="paymentStatus">無卡 / 匯款狀態</label><input type="text" id="paymentStatus" class="form-control" placeholder="請註記價錢與付款狀態"></div>
-                    <div class="form-group">
-                        <label for="logisticsStatus">物流狀態</label>
-                        <select id="logisticsStatus" class="form-control">
-                            <option value="待發貨">待發貨</option><option value="時代峰峻發貨">時代峰峻發貨</option><option value="數碼集運發貨">數碼集運發貨</option>
-                            <option value="到集運倉">到集運倉</option><option value="運回中">運回中</option><option value="已到貨">已到貨</option><option value="完成">完成</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label for="remarks">備註</label><textarea id="remarks" class="form-control" placeholder="請輸入備註資訊..."></textarea></div>
-                    <table style="width:100%;">
-                        <tr>
-                            <td><button type="button" id="btnCancel" class="btn" style="background-color: #78909c; width:100%;">取消</button></td>
-                            <td style="padding-left: 10px;"><button type="submit" class="btn" style="width:100%;">儲存至 Firebase</button></td>
-                        </tr>
-                    </table>
-                </form>
-            </td>
-        </tr>
-    </table>
+            </form>
+        </div>
+    </div>
     <div class="footer-note">💡 系統提示：目前已即時連動雲端資料庫。</div>
 </div>
 
@@ -129,7 +136,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // 你的真實 Firebase 配置憑證
     const firebaseConfig = {
         apiKey: "AIzaSyBoa1O_Nud8E5hf_02TbGs3g_-3MrsEeiU",
         authDomain: "ha2iq5.firebaseapp.com",
@@ -142,30 +148,98 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
-    let allOrders = {}; // 用來存放從 Firebase 撈出來的原始總資料
+    let allOrders = {}; 
     let currentEditId = null;
 
-    // 監聽 Firebase 資料庫
-    database.ref('orders').on('value', (snapshot) => {
-        allOrders = snapshot.val() || {};
-        updateDropdownOptions(); // 自動更新頂部下拉選單的選項內容
-        renderTable();           // 渲染表格
-    });
+    window.onload = function() {
+        // 綁定篩選事件
+        const searchKeyEl = document.getElementById('searchKey');
+        const filterUserEl = document.getElementById('filterUser');
+        const filterProductEl = document.getElementById('filterProduct');
+        const filterReceiverEl = document.getElementById('filterReceiver');
 
-    // 根據當前篩選條件與搜尋關鍵字繪製表格
+        if (searchKeyEl) searchKeyEl.addEventListener('input', renderTable);
+        if (filterUserEl) filterUserEl.addEventListener('change', renderTable);
+        if (filterProductEl) filterProductEl.addEventListener('change', renderTable);
+        if (filterReceiverEl) filterReceiverEl.addEventListener('change', renderTable);
+
+        // 💡 關鍵修改點 1：點選「新增商品」按鈕，讓右邊欄位顯現出來 (block)
+        const btnNewProduct = document.getElementById('btnNewProduct');
+        if (btnNewProduct) {
+            btnNewProduct.addEventListener('click', () => {
+                currentEditId = null;
+                document.getElementById('rightFormColumn').style.display = 'block'; // 顯現右側
+                document.getElementById('formTitle').innerText = "商品詳細資訊 (新增商品模式)";
+                document.getElementById('orderForm').reset();
+                document.getElementById('productName').focus();
+                
+                // 自動幫手機版滑動到表單位置
+                document.getElementById('rightFormColumn').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // 💡 關鍵修改點 2：點選「取消」按鈕，把右邊欄位重新隱藏 (none)
+        const btnCancel = document.getElementById('btnCancel');
+        if (btnCancel) {
+            btnCancel.addEventListener('click', () => {
+                currentEditId = null;
+                document.getElementById('rightFormColumn').style.display = 'none'; // 隱藏右側
+                document.getElementById('orderForm').reset();
+            });
+        }
+
+        // 表單送出事件
+        const orderForm = document.getElementById('orderForm');
+        if (orderForm) {
+            orderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const orderData = {
+                    product_name: document.getElementById('productName').value,
+                    character: document.getElementById('characterSelect').value,
+                    receiver: document.getElementById('receiverName').value,
+                    original_price: Number(document.getElementById('originalPrice').value) || 0,
+                    purchase_price: Number(document.getElementById('purchasePrice').value) || 0,
+                    payment_status: document.getElementById('paymentStatus').value,
+                    logistics_status: document.getElementById('logisticsStatus').value,
+                    remarks: document.getElementById('remarks').value
+                };
+
+                if (currentEditId) {
+                    database.ref('orders/' + currentEditId).update(orderData).then(() => {
+                        alert('雲端資料更新成功！');
+                        document.getElementById('rightFormColumn').style.display = 'none'; // 儲存完自動收起
+                    });
+                } else {
+                    database.ref('orders').push(orderData).then(() => {
+                        alert('新商品成功寫入雲端！');
+                        orderForm.reset();
+                        document.getElementById('rightFormColumn').style.display = 'none'; // 儲存完自動收起
+                    });
+                }
+            });
+        }
+
+        database.ref('orders').on('value', (snapshot) => {
+            allOrders = snapshot.val() || {};
+            updateDropdownOptions(); 
+            renderTable();           
+        });
+    };
+
     function renderTable() {
         const tbody = document.querySelector('#orderTable tbody');
+        if (!tbody) return;
         tbody.innerHTML = ''; 
 
-        const searchKey = document.getElementById('searchKey').value.toLowerCase();
-        const filterUser = document.getElementById('filterUser').value;
-        const filterProduct = document.getElementById('filterProduct').value;
-        const filterReceiver = document.getElementById('filterReceiver').value;
+        const searchKey = document.getElementById('searchKey') ? document.getElementById('searchKey').value.toLowerCase() : '';
+        const filterUser = document.getElementById('filterUser') ? document.getElementById('filterUser').value : '';
+        const filterProduct = document.getElementById('filterProduct') ? document.getElementById('filterProduct').value : '';
+        const filterReceiver = document.getElementById('filterReceiver') ? document.getElementById('filterReceiver').value : '';
 
         Object.keys(allOrders).forEach((id) => {
             const order = allOrders[id];
 
-            // 篩選過濾邏輯
             const matchesSearch = (order.product_name || '').toLowerCase().includes(searchKey) || 
                                   (order.receiver || '').toLowerCase().includes(searchKey);
             const matchesUser = !filterUser || order.character === filterUser;
@@ -181,7 +255,14 @@
                 if(order.logistics_status === '完成') statusClass = 'status-done';
 
                 const tr = document.createElement('tr');
-                tr.onclick = () => populateForm(id, order);
+                
+                // 💡 關鍵修改點 3：點選左邊表格任何一筆代購，也會自動把右邊展開 (block) 方便修改
+                tr.onclick = () => {
+                    document.getElementById('rightFormColumn').style.display = 'block';
+                    populateForm(id, order);
+                    document.getElementById('rightFormColumn').scrollIntoView({ behavior: 'smooth' });
+                };
+                
                 tr.innerHTML = `
                     <td><span class="status-badge ${statusClass}">${order.logistics_status || '待發貨'}</span></td>
                     <td>${order.product_name || ''}</td>
@@ -193,17 +274,16 @@
         });
     }
 
-    // 動態搜集雲端所有的商品、收件人，填入頂部的下拉選單
     function updateDropdownOptions() {
         const productSelect = document.getElementById('filterProduct');
         const receiverSelect = document.getElementById('filterReceiver');
+        if (!productSelect || !receiverSelect) return;
         
         const savedProductValue = productSelect.value;
         const savedReceiverValue = receiverSelect.value;
 
-        // 重置選單
-        productSelect.innerHTML = '<option value="">▼ 下拉式選單: 商品 (全部)</option>';
-        receiverSelect.innerHTML = '<option value="">▼ 下拉式選單: 收件人 (全部)</option>';
+        productSelect.innerHTML = '<option value="">▼ 商品 (全部)</option>';
+        receiverSelect.innerHTML = '<option value="">▼ 收件人 (全部)</option>';
 
         const products = new Set();
         const receivers = new Set();
@@ -216,71 +296,22 @@
         products.forEach(p => productSelect.innerHTML += `<option value="${p}">${p}</option>`);
         receivers.forEach(r => receiverSelect.innerHTML += `<option value="${r}">${r}</option>`);
 
-        // 還原先前選取的狀態
         productSelect.value = savedProductValue;
         receiverSelect.value = savedReceiverValue;
     }
 
-    // 綁定頂部搜尋與篩選事件（當內容改變時立刻重新計算表格）
-    document.getElementById('searchKey').addEventListener('input', renderTable);
-    document.getElementById('filterUser').addEventListener('change', renderTable);
-    document.getElementById('filterProduct').addEventListener('change', renderTable);
-    document.getElementById('filterReceiver').addEventListener('change', renderTable);
-
-    // 把選取的資料填入表單
     function populateForm(id, order) {
         currentEditId = id;
         document.getElementById('formTitle').innerText = "商品詳細資訊 (檢視/編輯模式)";
-        document.getElementById('productName').value = order.product_name || '';
-        document.getElementById('characterSelect').value = order.character || '';
-        document.getElementById('receiverName').value = order.receiver || '';
-        document.getElementById('originalPrice').value = order.original_price || '';
-        document.getElementById('purchasePrice').value = order.purchase_price || '';
-        document.getElementById('paymentStatus').value = order.payment_status || '';
-        document.getElementById('logisticsStatus').value = order.logistics_status || '待發貨';
-        document.getElementById('remarks').value = order.remarks || '';
+        if (document.getElementById('productName')) document.getElementById('productName').value = order.product_name || '';
+        if (document.getElementById('characterSelect')) document.getElementById('characterSelect').value = order.character || '';
+        if (document.getElementById('receiverName')) document.getElementById('receiverName').value = order.receiver || '';
+        if (document.getElementById('originalPrice')) document.getElementById('originalPrice').value = order.original_price || '';
+        if (document.getElementById('purchasePrice')) document.getElementById('purchasePrice').value = order.purchase_price || '';
+        if (document.getElementById('paymentStatus')) document.getElementById('paymentStatus').value = order.payment_status || '';
+        if (document.getElementById('logisticsStatus')) document.getElementById('logisticsStatus').value = order.logistics_status || '待發貨';
+        if (document.getElementById('remarks')) document.getElementById('remarks').value = order.remarks || '';
     }
-
-    // 點選「新增商品」按鈕
-    document.getElementById('btnNewProduct').addEventListener('click', () => {
-        currentEditId = null;
-        document.getElementById('formTitle').innerText = "商品詳細資訊 (新增商品模式)";
-        document.getElementById('orderForm').reset();
-        document.getElementById('productName').focus();
-    });
-
-    // 點選「取消」按鈕
-    document.getElementById('btnCancel').addEventListener('click', () => {
-        currentEditId = null;
-        document.getElementById('formTitle').innerText = "商品詳細資訊 (編輯/新增)";
-        document.getElementById('orderForm').reset();
-    });
-
-    // 表單送出（新增或更新）
-    document.getElementById('orderForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const orderData = {
-            product_name: document.getElementById('productName').value,
-            character: document.getElementById('characterSelect').value,
-            receiver: document.getElementById('receiverName').value,
-            original_price: Number(document.getElementById('originalPrice').value) || 0,
-            purchase_price: Number(document.getElementById('purchasePrice').value) || 0,
-            payment_status: document.getElementById('paymentStatus').value,
-            logistics_status: document.getElementById('logisticsStatus').value,
-            remarks: document.getElementById('remarks').value
-        };
-
-        if (currentEditId) {
-            database.ref('orders/' + currentEditId).update(orderData).then(() => {
-                alert('雲端資料更新成功！');
-            });
-        } else {
-            database.ref('orders').push(orderData).then(() => {
-                alert('新商品成功寫入雲端！');
-                document.getElementById('orderForm').reset();
-            });
-        }
-    });
 </script>
 </body>
 </html>
