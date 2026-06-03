@@ -68,8 +68,11 @@
             <td class="filter-cell" style="width: 20%;">
                 <select class="dropdown-select" id="filterUser">
                     <option value="">▼ 人名 (全部)</option>
-                    <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option><option value="左奇函">左奇函</option>
-                    <option value="王櫓杰">王櫓杰</option><option value="陳奕恆">陳奕恆</option><option value="楊博文">楊博文</option><option value="魏子宸">魏子宸</option>
+                    <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option><option value="王櫓杰">王櫓杰</option>
+                    <option value="王爍然">王爍然</option><option value="左奇函">左奇函</option><option value="陳奕恒">陳奕恒</option>
+                    <option value="楊博文">楊博文</option><option value="楊涵博">楊涵博</option><option value="張奕然">張奕然</option>
+                    <option value="聶瑋辰">聶瑋辰</option><option value="陳思罕">陳思罕</option><option value="魏子宸">魏子宸</option>
+                    <option value="李煜東">李煜東</option><option value="陳浚銘">陳浚銘</option><option value="文舒民">文舒民</option>
                 </select>
             </td>
             <td class="filter-cell" style="width: 20%;"><select class="dropdown-select" id="filterProduct"><option value="">▼ 商品 (全部)</option></select></td>
@@ -104,8 +107,10 @@
                     <select id="characterSelect" class="form-control">
                         <option value="">-- 請選擇人物 --</option>
                         <option value="官俊臣">官俊臣</option><option value="張桂源">張桂源</option><option value="張函瑞">張函瑞</option>
-                        <option value="王櫓杰">王櫓杰</option><option value="左奇函">左奇函</option><option value="陳奕恆">陳奕恆</option>
-                        <option value="楊博文">楊博文</option><option value="魏子宸">魏子宸</option>
+                        <option value="王櫓杰">王櫓杰</option><option value="王爍然">王爍然</option><option value="左奇函">左奇函</option>
+                        <option value="陳奕恒">陳奕恒</option><option value="楊博文">楊博文</option><option value="楊涵博">楊涵博</option>
+                        <option value="張奕然">張奕然</option><option value="聶瑋辰">聶瑋辰</option><option value="陳思罕">陳思罕</option>
+                        <option value="魏子宸">魏子宸</option><option value="李煜東">李煜東</option><option value="陳浚銘">陳浚銘</option><option value="文舒民">文舒民</option>
                     </select>
                 </div>
                 <div class="form-group"><label for="receiverName">收件人</label><input type="text" id="receiverName" class="form-control" placeholder="請輸入收件人姓名"></div>
@@ -115,7 +120,7 @@
                 <div class="form-group">
                     <label for="logisticsStatus">物流狀態</label>
                     <select id="logisticsStatus" class="form-control">
-                        <option value="待發貨">待發貨</option><option value="時代峰峻發貨">時代峰峻發貨</option><option value="數碼集運發貨">數碼集運發貨</option>
+                        <option value="待發貨">待發貨</option><option value="時代峰峻已發貨">時代峰峻已發貨</option><option value="數據組已發貨">數據組已發貨</option>
                         <option value="到集運倉">到集運倉</option><option value="運回中">運回中</option><option value="已到貨">已到貨</option><option value="完成">完成</option>
                     </select>
                 </div>
@@ -248,8 +253,8 @@
 
             if (matchesSearch && matchesUser && matchesProduct && matchesReceiver) {
                 let statusClass = 'status-pending';
-                if(order.logistics_status === '時代峰峻發貨') statusClass = 'status-company';
-                if(order.logistics_status === '數碼集運發貨') statusClass = 'status-warehouse';
+                if(order.logistics_status === '時代峰峻已發貨') statusClass = 'status-company';
+                if(order.logistics_status === '數據組已發貨') statusClass = 'status-warehouse';
                 if(order.logistics_status === '已到貨' || order.logistics_status === '到集運倉') statusClass = 'status-arrived';
                 if(order.logistics_status === '運回中') statusClass = 'status-returning';
                 if(order.logistics_status === '完成') statusClass = 'status-done';
