@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>代購與收件管理系統 - 編輯與檢視介面</title>
     <style>
-        *, *::before, *::after { box-spacing: border-box; }
+        *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background-color: #f4f6f8; color: #333; margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         header { border-bottom: 2px solid #3f51b5; padding-bottom: 15px; margin-bottom: 25px; }
@@ -45,6 +45,10 @@
         .status-returning { background-color: #f44336; }
         .status-done { background-color: #9e9e9e; }
         .footer-note { margin-top: 25px; padding: 12px; background-color: #fffde7; border: 1px solid #fff59d; border-radius: 4px; font-size: 13px; color: #5d4037; text-align: center; }
+
+        /* 💡 讓管道下拉選單跟姓名輸入框並排的組合樣式 */
+        .input-group-combine { display: flex; gap: 8px; }
+        .select-platform { width: 90px; flex-shrink: 0; }
 
         /* 手機版響應式微調 */
         @media (max-width: 768px) {
@@ -91,8 +95,7 @@
                         <th style="width: 20%;">價錢</th>
                     </tr>
                 </thead>
-                <tbody>
-                    </tbody>
+                <tbody></tbody>
             </table>
             <button class="btn btn-add" id="btnNewProduct">➕ 點選新增商品</button>
         </div>
@@ -112,14 +115,32 @@
                         <option value="魏子宸">魏子宸</option><option value="李煜東">李煜東</option><option value="陳浚銘">陳浚銘</option><option value="文舒民">文舒民</option>
                     </select>
                 </div>
-                <div class="form-group"><label for="receiverName">收件人</label><input type="text" id="receiverName" class="form-control" placeholder="請輸入收件人姓名"></div>
+                
+                <div class="form-group">
+                    <label for="receiverName">收件人</label>
+                    <div class="input-group-combine">
+                        <select id="platformSelect" class="form-control select-platform">
+                            <option value="IG">IG</option>
+                            <option value="FB">FB</option>
+                        </select>
+                        <input type="text" id="receiverName" class="form-control" placeholder="請輸入收件人姓名">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="productQuantity">商品數量</label>
+                    <input type="number" id="productQuantity" class="form-control" min="1" value="1" placeholder="請輸入數量">
+                </div>
+
                 <div class="form-group"><label for="originalPrice">原價 (人民幣 ¥)</label><input type="number" id="originalPrice" class="form-control" placeholder="請輸入人民幣金額"></div>
                 <div class="form-group"><label for="purchasePrice">代購價 (台幣 NT$)</label><input type="number" id="purchasePrice" class="form-control" placeholder="請輸入台幣計算金額"></div>
                 <div class="form-group"><label for="paymentStatus">無卡 / 匯款狀態</label><input type="text" id="paymentStatus" class="form-control" placeholder="請註記價錢與付款狀態"></div>
                 <div class="form-group">
                     <label for="logisticsStatus">物流狀態</label>
                     <select id="logisticsStatus" class="form-control">
-                        <option value="待發貨">待發貨</option><option value="時代峰峻已發貨">時代峰峻已發貨</option><option value="數據組已發貨">數據組已發貨</option>
+                        <option value="待發貨">待發貨</option>
+                        <option value="時代峰峻已發貨">時代峰峻已發貨</option>
+                        <option value="數據組已發貨">數據組已發貨</option>
                         <option value="到集運倉">到集運倉</option><option value="運回中">運回中</option><option value="已到貨">已到貨</option><option value="完成">完成</option>
                     </select>
                 </div>
@@ -156,7 +177,6 @@
     let currentEditId = null;
 
     window.onload = function() {
-        // 綁定篩選事件
         const searchKeyEl = document.getElementById('searchKey');
         const filterUserEl = document.getElementById('filterUser');
         const filterProductEl = document.getElementById('filterProduct');
@@ -167,32 +187,29 @@
         if (filterProductEl) filterProductEl.addEventListener('change', renderTable);
         if (filterReceiverEl) filterReceiverEl.addEventListener('change', renderTable);
 
-        // 💡 關鍵修改點 1：點選「新增商品」按鈕，讓右邊欄位顯現出來 (block)
         const btnNewProduct = document.getElementById('btnNewProduct');
         if (btnNewProduct) {
             btnNewProduct.addEventListener('click', () => {
                 currentEditId = null;
-                document.getElementById('rightFormColumn').style.display = 'block'; // 顯現右側
+                document.getElementById('rightFormColumn').style.display = 'block'; 
                 document.getElementById('formTitle').innerText = "商品詳細資訊 (新增商品模式)";
                 document.getElementById('orderForm').reset();
+                document.getElementById('platformSelect').value = 'IG'; // 新增時預設 IG
+                document.getElementById('productQuantity').value = 1;  // 新增時預設數量 1
                 document.getElementById('productName').focus();
-                
-                // 自動幫手機版滑動到表單位置
                 document.getElementById('rightFormColumn').scrollIntoView({ behavior: 'smooth' });
             });
         }
 
-        // 💡 關鍵修改點 2：點選「取消」按鈕，把右邊欄位重新隱藏 (none)
         const btnCancel = document.getElementById('btnCancel');
         if (btnCancel) {
             btnCancel.addEventListener('click', () => {
                 currentEditId = null;
-                document.getElementById('rightFormColumn').style.display = 'none'; // 隱藏右側
+                document.getElementById('rightFormColumn').style.display = 'none'; 
                 document.getElementById('orderForm').reset();
             });
         }
 
-        // 表單送出事件
         const orderForm = document.getElementById('orderForm');
         if (orderForm) {
             orderForm.addEventListener('submit', (e) => {
@@ -201,7 +218,9 @@
                 const orderData = {
                     product_name: document.getElementById('productName').value,
                     character: document.getElementById('characterSelect').value,
+                    platform: document.getElementById('platformSelect').value, // 💡 新增寫入平台管道
                     receiver: document.getElementById('receiverName').value,
+                    quantity: Number(document.getElementById('productQuantity').value) || 1, // 💡 新增寫入數量
                     original_price: Number(document.getElementById('originalPrice').value) || 0,
                     purchase_price: Number(document.getElementById('purchasePrice').value) || 0,
                     payment_status: document.getElementById('paymentStatus').value,
@@ -212,13 +231,13 @@
                 if (currentEditId) {
                     database.ref('orders/' + currentEditId).update(orderData).then(() => {
                         alert('雲端資料更新成功！');
-                        document.getElementById('rightFormColumn').style.display = 'none'; // 儲存完自動收起
+                        document.getElementById('rightFormColumn').style.display = 'none'; 
                     });
                 } else {
                     database.ref('orders').push(orderData).then(() => {
                         alert('新商品成功寫入雲端！');
                         orderForm.reset();
-                        document.getElementById('rightFormColumn').style.display = 'none'; // 儲存完自動收起
+                        document.getElementById('rightFormColumn').style.display = 'none'; 
                     });
                 }
             });
@@ -258,9 +277,12 @@
                 if(order.logistics_status === '運回中') statusClass = 'status-returning';
                 if(order.logistics_status === '完成') statusClass = 'status-done';
 
+                // 💡 在左側列表的收件人前方動態標註 (IG) 或 (FB)
+                const platformPrefix = order.platform ? `(${order.platform}) ` : '';
+                // 💡 如果數量大於 1，在左側品名後面後綴顯示數量（例如：官方周邊徽章 x3）
+                const qtySuffix = (order.quantity && order.quantity > 1) ? ` x${order.quantity}` : '';
+
                 const tr = document.createElement('tr');
-                
-                // 💡 關鍵修改點 3：點選左邊表格任何一筆代購，也會自動把右邊展開 (block) 方便修改
                 tr.onclick = () => {
                     document.getElementById('rightFormColumn').style.display = 'block';
                     populateForm(id, order);
@@ -269,8 +291,8 @@
                 
                 tr.innerHTML = `
                     <td><span class="status-badge ${statusClass}">${order.logistics_status || '待發貨'}</span></td>
-                    <td>${order.product_name || ''}</td>
-                    <td>${order.receiver || ''}</td>
+                    <td>${order.product_name || ''}${qtySuffix}</td>
+                    <td>${platformPrefix}${order.receiver || ''}</td>
                     <td>¥ ${order.original_price || 0}</td>
                 `;
                 tbody.appendChild(tr);
@@ -309,7 +331,9 @@
         document.getElementById('formTitle').innerText = "商品詳細資訊 (檢視/編輯模式)";
         if (document.getElementById('productName')) document.getElementById('productName').value = order.product_name || '';
         if (document.getElementById('characterSelect')) document.getElementById('characterSelect').value = order.character || '';
+        if (document.getElementById('platformSelect')) document.getElementById('platformSelect').value = order.platform || 'IG'; // 💡 帶入平台
         if (document.getElementById('receiverName')) document.getElementById('receiverName').value = order.receiver || '';
+        if (document.getElementById('productQuantity')) document.getElementById('productQuantity').value = order.quantity || 1;  // 💡 帶入數量
         if (document.getElementById('originalPrice')) document.getElementById('originalPrice').value = order.original_price || '';
         if (document.getElementById('purchasePrice')) document.getElementById('purchasePrice').value = order.purchase_price || '';
         if (document.getElementById('paymentStatus')) document.getElementById('paymentStatus').value = order.payment_status || '';
