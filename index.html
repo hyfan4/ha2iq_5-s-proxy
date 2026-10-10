@@ -338,12 +338,12 @@
         const footerNote = document.getElementById('footerNote');
 
         if (isAdmin) {
-            modeBadge.innerText = "👑 模式：管理員 (可編輯/刪除)";
+            modeBadge.innerText = "管理員 (可編輯/刪除)";
             modeBadge.className = "view-mode-badge badge-admin";
             btnNewProduct.style.display = 'block';
             footerNote.innerText = "💡 管理員模式：您擁有全部新增、修改、刪除權限。";
         } else {
-            modeBadge.innerText = "👀 模式：訪客公開檢視 (唯讀)";
+            modeBadge.innerText = "訪客檢視";
             modeBadge.className = "view-mode-badge badge-viewer";
             btnNewProduct.style.display = 'none';
             footerNote.innerText = "💡 系統提示：目前為唯讀檢視模式，所有進度與狀態即時由雲端更新。";
